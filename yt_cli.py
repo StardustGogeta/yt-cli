@@ -131,9 +131,9 @@ if __name__ == "__main__":
         exit(1)
 
     print("Welcome to YT-CLI!")
-    print("Enter a search term below, or use /h for a list of commands.")
     try:
         while True:
+            print("Enter a search term below, or use /h for a list of commands.")
             userinput = input("> ").strip()
             if userinput in commands:
                 # Execute special command if provided
