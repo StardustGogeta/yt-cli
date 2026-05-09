@@ -64,7 +64,7 @@ def help_menu(args):
 def clear_cache(args):
     if input("Are you SURE you want to clear the video cache?\n" +
              f"This will delete all files under {args.cache_dir}. (y/N) ").strip().lower() in ["yes", "y"]:
-        shutil.rmtree(args.cache_dir)
+        shutil.rmtree(args.cache_dir, ignore_errors=True)
         print("Removed cache directory.")
     else:
         print("Did not clear cache.")
