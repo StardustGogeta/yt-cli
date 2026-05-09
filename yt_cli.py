@@ -110,16 +110,18 @@ def get_selection(max_index, args):
             sel_index = int(selection)
             if sel_index < 1 or sel_index > max_index:
                 print(f"Please enter a valid integer in the range 1 to {max_index}.")
-                return get_selection(max_index)
+                return get_selection(max_index, args)
             return sel_index
         except:
             print("Could not parse integer. Try again.")
-            return get_selection(max_index)
+            return get_selection(max_index, args)
 
 if __name__ == "__main__":
     # Allow flags for some configuration settings
     parser = argparse.ArgumentParser("yt-cli", "CLI browser for YouTube")
     parser.add_argument("--cache-dir", default="/tmp/yt_cli", help="path to store downloaded videos")
+    parser.add_argument("-f", "--format", default="(bv+ba/best)[filesize<100M]", help="quality for downloaded videos (yt-dlp format)")
+    parser.add_argument("-S", "--format-sort", default="", help="sort method for quality of downloaded videos (yt-dlp format-sort)")
     parser.add_argument("--mpv", default="mpv", help="path to MPV executable")
 
     # Allow passing through extra args to MPV
@@ -150,7 +152,8 @@ if __name__ == "__main__":
                         print(f"Downloading video {v.title}...")
                         os.makedirs(args.cache_dir, exist_ok=True)
                         yt_dlp_opts = {
-                            "format": "bestvideo+bestaudio/best",
+                            "format": args.format,
+                            "format_sort": [args.format_sort],
                             "outtmpl": path_no_ext,
                         }
                         with yt_dlp.YoutubeDL(yt_dlp_opts) as ydl:
@@ -168,7 +171,8 @@ if __name__ == "__main__":
                             "--vo=wlshm,x11,gpu,tct",
                             "--vo-tct-buffering=frame",
                             "--profile=sw-fast",
-                            r"--autofit-larger=80%x80%",
+                            "--volume=70",
+                            r"--geometry=80%x80%",
                             "--keep-open",
                             *extra_args[1:],
                             path
