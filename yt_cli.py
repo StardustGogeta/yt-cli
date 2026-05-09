@@ -4,10 +4,12 @@ from datetime import datetime, timedelta
 import glob
 import os
 import requests
+import readline
 from rich.console import Console
 from rich.table import Table
 import shutil
 import subprocess
+import sys
 import yt_dlp
 
 VERSION = 0.1
@@ -119,16 +121,21 @@ def get_selection(max_index, args):
 if __name__ == "__main__":
     # Allow flags for some configuration settings
     parser = argparse.ArgumentParser("yt-cli", "CLI browser for YouTube")
+    
+    # Allow passing through extra args to MPV
+    try:
+        dash_index = sys.argv.index("--")
+        argv = sys.argv[1:dash_index]
+        extra_args = sys.argv[dash_index + 1:]
+    except ValueError:
+        argv = sys.argv[1:]
+        extra_args = []
+
     parser.add_argument("--cache-dir", default="/tmp/yt_cli", help="path to store downloaded videos")
     parser.add_argument("-f", "--format", default="(bv+ba/best)[filesize<100M]", help="quality for downloaded videos (yt-dlp format)")
     parser.add_argument("-S", "--format-sort", default="", help="sort method for quality of downloaded videos (yt-dlp format-sort)")
     parser.add_argument("--mpv", default="mpv", help="path to MPV executable")
-
-    # Allow passing through extra args to MPV
-    args, extra_args = parser.parse_known_args()
-    if extra_args and extra_args[0] != "--":
-        print(f"Unrecognized argument: {extra_args[0]}")
-        exit(1)
+    args = parser.parse_args(argv)
 
     print("Welcome to YT-CLI!")
     try:
@@ -182,6 +189,6 @@ if __name__ == "__main__":
                             *extra_args[1:],
                             path
                         ])
-    except KeyboardInterrupt, EOFError:
+    except (KeyboardInterrupt, EOFError):
         exit()
 
