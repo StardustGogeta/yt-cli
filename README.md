@@ -20,6 +20,8 @@ Once the prerequisites are installed, simply run `yt_cli.py` and start searching
 
 After making a search, a sorted table of the top results will appear. Then, enter the row number of the video you wish to download/play and the rest will proceed automatically. Use the video controls or type `q` to exit playback.
 
+Video quality can be dictated using the `-f`/`--format` and `-S`/`--format-sort` arguments, which are aliases for the same arguments in [yt-dlp](https://github.com/yt-dlp/yt-dlp#video-format-options). The default is to fetch the highest-quality video/audio combination available that is smaller than 100 MB.
+
 Note that videos are stored in a cache in `/tmp/yt_cli` by default, allowing the download to be skipped if the same video is watched more than once. To change the cache location, pass the `--cache-dir` argument at launch. To clear the cache, enter `/clear` while in the program.
 
 If you need to change the `mpv` executable path, pass the argument `--mpv`. The `mpv` settings are set to defaults that should work well for most platforms, but in case you do need to change any of the settings for `mpv` itself, any arguments after `--` are passed through directly.
