@@ -1,10 +1,25 @@
 # yt-cli
-Play YouTube videos from the CLI, with support for extremely low-end devices.
+
+Play YouTube videos from the CLI, designed to support extremely low-end devices.
+
+Tested on Windows 10, WSL, and Ubuntu 26.04.
 
 ## Requirements
 
-Use your Python package manager of choice to install required packages from `requirements.txt`.
+Use your Python package manager of choice to install the required packages from `requirements.txt`.
 
 In addition, make sure the following packages are present on your system:
+* `python3` (to run the script)
+* `ffmpeg` (for audio/video processing)
 * `mpv` (for video playback)
 * `yt-dlp` (for YouTube scraping)
+
+## How to Run
+
+Once the prerequisites are installed, simply run `yt_cli.py` and start searching for videos.
+
+After making a search, a sorted table of the top results will appear. Then, enter the row number of the video you wish to download/play and the rest will proceed automatically. Use the video controls or type `q` to exit playback.
+
+Note that videos are stored in a cache in `/tmp/yt_cli` by default, allowing the download to be skipped if the same video is watched more than once. To change the cache location, pass the `--cache-dir` argument at launch. To clear the cache, enter `/clear` while in the program.
+
+If you need to change the `mpv` executable path, pass the argument `--mpv`. The `mpv` settings are set to defaults that should work well for most platforms, but in case you do need to change any of the settings for `mpv` itself, any arguments after `--` are passed through directly.

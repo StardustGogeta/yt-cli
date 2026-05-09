@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+import argparse
 from datetime import datetime, timedelta
 import glob
 import os
 import requests
 from rich.console import Console
 from rich.table import Table
+import shutil
 import subprocess
 import yt_dlp
 
@@ -52,17 +55,26 @@ def top_videos(query):
     j = r.json()
     return [Video(x["title"], x["videoId"], x["author"], x["viewCount"], x["lengthSeconds"], x["published"]) for x in j]
 
-def help_menu():
+def help_menu(args):
     print(f"\n=== YT-CLI Version {VERSION} ===")
     for x, y in commands.items():
         print(f"{x}\t{y[0]}")
     print()
 
-def quit_program():
+def clear_cache(args):
+    if input("Are you SURE you want to clear the video cache?\n" +
+             f"This will delete all files under {args.cache_dir}. (y/N) ").strip().lower() in ["yes", "y"]:
+        shutil.rmtree(args.cache_dir)
+        print("Removed cache directory.")
+    else:
+        print("Did not clear cache.")
+
+def quit_program(args):
     exit()
 
 commands = {
     "/h": ("Show the help menu", help_menu),
+    "/clear": ("Clear the saved video cache", clear_cache),
     "/q": ("Exit program", quit_program)
 }
 
@@ -86,13 +98,13 @@ def show_videos(videos):
     console = Console()
     console.print(table)
 
-def get_selection(max_index):
+def get_selection(max_index, args):
     selection = input("> ").strip()
     if selection == "/b":
         return None
     elif selection in commands:
         # Execute special command if provided
-        commands[selection][1]()
+        commands[selection][1](args)
     else:
         try:
             sel_index = int(selection)
@@ -104,41 +116,63 @@ def get_selection(max_index):
             print("Could not parse integer. Try again.")
             return get_selection(max_index)
 
-CACHE_DIR = "/tmp/yt_cli"
-
 if __name__ == "__main__":
+    # Allow flags for some configuration settings
+    parser = argparse.ArgumentParser("yt-cli", "CLI browser for YouTube")
+    parser.add_argument("--cache-dir", default="/tmp/yt_cli", help="path to store downloaded videos")
+    parser.add_argument("--mpv", default="mpv", help="path to MPV executable")
+
+    # Allow passing through extra args to MPV
+    args, extra_args = parser.parse_known_args()
+    if extra_args and extra_args[0] != "--":
+        print(f"Unrecognized argument: {extra_args[0]}")
+        exit(1)
+
     print("Welcome to YT-CLI!")
     print("Enter a search term below, or use /h for a list of commands.")
-    while True:
-        userinput = input("> ").strip()
-        if userinput in commands:
-            # Execute special command if provided
-            commands[userinput][1]()
-        elif userinput:
-            # Otherwise, do a search
-            vids = top_videos(userinput)
-            show_videos(vids)
-            print("Enter the number of the video you want to play, or /b to go back:")
-            sel = get_selection(len(vids))
-            if sel is not None:
-                v = vids[sel - 1]
-                path_no_ext = f"{CACHE_DIR}/{v.id}"
-                paths = glob.glob(f"{path_no_ext}.*")
-                if not paths:
-                    print(f"Downloading video {v.title}...")
-                    os.makedirs(CACHE_DIR, exist_ok=True)
-                    yt_dlp_opts = {
-                        "format": "bestvideo+bestaudio/best",
-                        "outtmpl": path_no_ext,
-                    }
-                    with yt_dlp.YoutubeDL(yt_dlp_opts) as ydl:
-                        ydl.download(f"https://www.youtube.com/watch?v={v.id}")
-                print(f"Searching for {path_no_ext}...")
-                paths = glob.glob(f"{path_no_ext}.*")
-                if not paths:
-                    print("Error: Failed to download video!")
-                else:
-                    path = paths[0]
-                    # Play video
-                    subprocess.run(["mpv", "--vo=wlshm,x11,tct", r"--autofit-larger=50%x50%", path])
+    try:
+        while True:
+            userinput = input("> ").strip()
+            if userinput in commands:
+                # Execute special command if provided
+                commands[userinput][1](args)
+            elif userinput:
+                # Otherwise, do a search
+                vids = top_videos(userinput)
+                show_videos(vids)
+                print("Enter the number of the video you want to play, or /b to go back:")
+                sel = get_selection(len(vids), args)
+                if sel is not None:
+                    v = vids[sel - 1]
+                    path_no_ext = f"{args.cache_dir}/{v.id}"
+                    paths = glob.glob(f"{path_no_ext}.*")
+                    if not paths:
+                        print(f"Downloading video {v.title}...")
+                        os.makedirs(args.cache_dir, exist_ok=True)
+                        yt_dlp_opts = {
+                            "format": "bestvideo+bestaudio/best",
+                            "outtmpl": path_no_ext,
+                        }
+                        with yt_dlp.YoutubeDL(yt_dlp_opts) as ydl:
+                            ydl.download(f"https://www.youtube.com/watch?v={v.id}")
+                    print(f"Searching for {path_no_ext}...")
+                    paths = glob.glob(f"{path_no_ext}.*")
+                    if not paths:
+                        print("Error: Failed to download video!")
+                    else:
+                        path = paths[0]
+                        # Play video
+                        subprocess.run([
+                            args.mpv,
+                            f"--title={v.title}",
+                            "--vo=wlshm,x11,gpu,tct",
+                            "--vo-tct-buffering=frame",
+                            "--profile=sw-fast",
+                            r"--autofit-larger=80%x80%",
+                            "--keep-open",
+                            *extra_args[1:],
+                            path
+                        ])
+    except KeyboardInterrupt, EOFError:
+        exit()
 
