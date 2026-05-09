@@ -154,14 +154,19 @@ if __name__ == "__main__":
                         yt_dlp_opts = {
                             "format": args.format,
                             "format_sort": [args.format_sort],
+                            "remote_components": ["ejs:github"],
                             "outtmpl": path_no_ext,
                         }
                         with yt_dlp.YoutubeDL(yt_dlp_opts) as ydl:
-                            ydl.download(f"https://www.youtube.com/watch?v={v.id}")
+                            try:
+                                ydl.download(f"https://www.youtube.com/watch?v={v.id}")
+                            except yt_dlp.utils.DownloadError:
+                                print("Error: Could not download video. " +
+                                      "Please note that if the target video is labeled as \"for kids\", then deno must be installed.")
                     print(f"Searching for {path_no_ext}...")
                     paths = glob.glob(f"{path_no_ext}.*")
                     if not paths:
-                        print("Error: Failed to download video!")
+                        print("Error: Failed to locate downloaded video!")
                     else:
                         path = paths[0]
                         # Play video

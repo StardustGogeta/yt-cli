@@ -14,6 +14,12 @@ In addition, make sure the following packages are present on your system:
 * `mpv` (for video playback)
 * `yt-dlp` (for YouTube scraping)
 
+To be able to download material that is marked for kids, you also must install `deno`.
+You may do this with the following command:
+```bash
+curl -fsSL https://deno.land/install.sh | sh
+```
+
 ## How to Run
 
 Once the prerequisites are installed, simply run `yt_cli.py` and start searching for videos.
