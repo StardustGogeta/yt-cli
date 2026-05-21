@@ -2,7 +2,9 @@
 
 Play YouTube videos from the CLI, designed to support extremely low-end devices.
 
-Tested on Windows 10, WSL, and Ubuntu 26.04.
+Tested on Windows 10, WSL, Ubuntu 26.04, and Fedora 44.
+
+![Demonstration video](demo.gif)
 
 ## Requirements
 

@@ -55,7 +55,8 @@ def top_videos(query):
         }
     )
     j = r.json()
-    return [Video(x["title"], x["videoId"], x["author"], x["viewCount"], x["lengthSeconds"], x["published"]) for x in j]
+    # For some reason, selecting type=video in the query doesn't always limit it to only videos
+    return [Video(x["title"], x["videoId"], x["author"], x["viewCount"], x["lengthSeconds"], x["published"]) for x in j if x["type"] == "video"]
 
 def help_menu(args):
     print(f"\n=== YT-CLI Version {VERSION} ===")
@@ -186,7 +187,7 @@ if __name__ == "__main__":
                             "--volume=70",
                             r"--geometry=80%x80%",
                             "--keep-open",
-                            *extra_args[1:],
+                            *extra_args,
                             path
                         ])
     except (KeyboardInterrupt, EOFError):
